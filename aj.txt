@@ -24,8 +24,10 @@ local LocalPlayer = Players.LocalPlayer
 local alertSound = Instance.new("Sound", SoundService)
 alertSound.Name = "WowAlert"
 alertSound.SoundId = "rbxassetid://1548304764" 
-alertSound.Volume = 10
+alertSound.Volume = 20
 alertSound:Play()
+
+
 -- --- SAUVEGARDE & CHARGEMENT ---
 local function SaveData()
     pcall(function() writefile(SAVE_FILE, HttpService:JSONEncode(TargetList)) end)
@@ -104,7 +106,7 @@ MainFrame.Draggable = true
 MainFrame.Visible  = false
 
 local Title = Instance.new("TextLabel", MainFrame)
-Title.Text = "Tiikan AutoJoiner V1.1"; 
+Title.Text = "Test"; 
 Title.Font = Enum.Font.GothamBlack; 
 Title.TextSize = 25;
 Title.TextColor3 = Color3.fromRGB(0, 120, 255);
@@ -120,12 +122,21 @@ ValueInput.PlaceholderText = "Min (M)"; ValueInput.Size = UDim2.new(0, 80, 0, 30
 ValueInput.Position = UDim2.new(0, 180, 0, 60); ValueInput.BackgroundColor3 = Color3.fromRGB(30, 30, 30); ValueInput.TextColor3 = Color3.new(1,1,1)
 
 local SpamInput = Instance.new("TextBox", MainFrame)
-SpamInput.PlaceholderText = "Essais"; SpamInput.Text = "500"; SpamInput.Size = UDim2.new(0, 100, 0, 30)
+local initcount = 500
+SpamInput.PlaceholderText = "Essais"; SpamInput.Text = initcount; SpamInput.Size = UDim2.new(0, 60, 0, 30)
 SpamInput.Position = UDim2.new(0, 270, 0, 60); SpamInput.BackgroundColor3 = Color3.fromRGB(30, 30, 30); SpamInput.TextColor3 = Color3.new(1,1,1)
+
+local ConfirmInput = Instance.new("TextButton", MainFrame)
+ConfirmInput.Text = "V"; ConfirmInput.Size = UDim2.new(0, 30, 0, 30)
+ConfirmInput.Position = UDim2.new(0, 340, 0, 60); ConfirmInput.BackgroundColor3 = Color3.fromRGB(0, 120, 255); ConfirmInput.TextColor3 = Color3.new(1,1,1)
+
+
+
 
 local AddBtn = Instance.new("TextButton", MainFrame)
 AddBtn.Text = "ADD NEW BRAINROT"; AddBtn.Size = UDim2.new(0, 360, 0, 30)
 AddBtn.Position = UDim2.new(0, 10, 0, 100); AddBtn.BackgroundColor3 = Color3.fromRGB(0, 120, 255); AddBtn.TextColor3 = Color3.new(1,1,1)
+
 
 local ListFrame = Instance.new("ScrollingFrame", MainFrame)
 ListFrame.Size = UDim2.new(1, -20, 0, 200); ListFrame.Position = UDim2.new(0, 10, 0, 140)
@@ -187,7 +198,9 @@ SettingsBtn.MouseButton1Click:Connect(function()
 end)
 
 
-
+ConfirmInput.MouseButton1Click:Connect(function()
+    initcount = tonumber(SpamInput.Text) or 500
+end)
 
 
 
@@ -293,7 +306,9 @@ local function scanAPI()
                 if shouldJoin then
                     print("DEBUG: Cible trouvée ! Nom: " .. sName .. " | ID: " .. sID)
                     LastSeenTimestamp[sID] = tostring(sTS_num)
-                    local count = tonumber(SpamInput.Text) or 500
+                    local count = initcount or 500
+                    local a = 0
+                    
                     task.spawn(function() spamJoin(sID, count, server.displayName) end)
                     break 
                 end
@@ -342,6 +357,4 @@ task.spawn(function()
     end
 
 end)
-
-
 
