@@ -1,0 +1,343 @@
+local HttpService = game:GetService("HttpService")
+local TeleportService = game:GetService("TeleportService")
+local Players = game:GetService("Players")
+local CoreGui = game:GetService("CoreGui")
+local SoundService = game:GetService("SoundService")
+
+
+
+print("\n" .. string.rep("=", 50))
+print("TIIKAN AUTO JOINER LOADED")
+print(string.rep("=", 50) .. "\n")
+
+local API_URL = "https://texts-terms-doom-engineering.trycloudflare.com/"
+local SAVE_FILE = "Tiikan_AutoJoiner_Config.txt"
+local MAX_AGE_SECONDS = 10
+
+local TargetList = {}
+local LastSeenTimestamp = {}
+local isActive = false
+local isJoining = false 
+local LocalPlayer = Players.LocalPlayer
+
+-- --- SON WOW ---
+local alertSound = Instance.new("Sound", SoundService)
+alertSound.Name = "WowAlert"
+alertSound.SoundId = "rbxassetid://78137933646098" 
+alertSound.Volume = 20
+
+-- --- SAUVEGARDE & CHARGEMENT ---
+local function SaveData()
+    pcall(function() writefile(SAVE_FILE, HttpService:JSONEncode(TargetList)) end)
+end
+
+local function LoadData()
+    if isfile(SAVE_FILE) then
+        local success, result = pcall(function() return HttpService:JSONDecode(readfile(SAVE_FILE)) end)
+        if success then TargetList = result end
+    end
+end
+LoadData()
+
+-- --- GUI ---
+if CoreGui:FindFirstChild("Tiikan_AutoJoiner") then CoreGui.Tiikan_AutoJoiner:Destroy() end
+local ScreenGui = Instance.new("ScreenGui", CoreGui)
+ScreenGui.Name = "Tiikan_AutoJoiner_v1"
+
+local InitFrame = Instance.new("Frame", ScreenGui)
+InitFrame.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+InitFrame.Size = UDim2.new(0, 500, 0, 200)
+InitFrame.Position = UDim2.new(0.5, 448, 0.5, 253)
+InitFrame.Active = true
+InitFrame.Draggable = false
+InitFrame.BackgroundTransparency = 1
+
+
+local ToggleBtn = Instance.new("TextButton", InitFrame)
+ToggleBtn.Size = UDim2.new(0, 300, 0, 100)
+ToggleBtn.Position = UDim2.new(0, 200, 0, 100)
+ToggleBtn.BackgroundColor3 = Color3.fromRGB(150, 0, 0)
+ToggleBtn.Text = "OFF"
+ToggleBtn.TextSize = 10
+ToggleBtn.Font = Enum.Font.GothamBold
+ToggleBtn.TextColor3 = Color3.new(1,1,1)
+
+
+
+
+local SettingsBtn = Instance.new("ImageButton", InitFrame)
+
+SettingsBtn.Size = UDim2.new(0, 100, 0, 100)
+SettingsBtn.Position = UDim2.new(0, 75, 0, 100)
+SettingsBtn.BackgroundTransparency = 1
+SettingsBtn.Image = "rbxassetid://85241080575654"
+SettingsBtn.HoverImage = "rbxassetid://140249326520304" 
+
+local Status = Instance.new("TextLabel", InitFrame)
+Status.Size = UDim2.new(0, 0, 0, 70)
+Status.Position = UDim2.new(0, 350, 0, 50)
+Status.BackgroundTransparency = 1
+Status.TextColor3 = Color3.fromRGB(0, 0, 0)
+Status.Text = "Ready"
+Status.TextSize = 25
+Status.Font = Enum.Font.FredokaOne
+
+local StopBtn = Instance.new("TextButton", InitFrame)
+StopBtn.Size = UDim2.new(0, 90, 0, 90)
+StopBtn.Position = UDim2.new(0, 80, 0, 5)
+StopBtn.BackgroundColor3 = Color3.fromRGB(200, 0, 0)
+StopBtn.Text = "X"
+StopBtn.TextSize = 50
+StopBtn.Font = Enum.Font.FredokaOne
+StopBtn.TextColor3 = Color3.new(1,1,1)
+StopBtn.Visible = false
+
+
+
+
+local MainFrame = Instance.new("Frame", ScreenGui)
+MainFrame.BackgroundColor3 = Color3.fromRGB(12, 12, 12)
+MainFrame.Size = UDim2.new(0, 380, 0, 380)
+MainFrame.Position = UDim2.new(0.5, -190, 0.3, 0)
+MainFrame.Active = true
+MainFrame.Draggable = true
+MainFrame.Visible  = false
+
+local Title = Instance.new("TextLabel", MainFrame)
+Title.Text = "Tiikan AutoJoiner V1.1"; 
+Title.Font = Enum.Font.GothamBlack; 
+Title.TextSize = 25;
+Title.TextColor3 = Color3.fromRGB(0, 120, 255);
+Title.Size = UDim2.new(1, 0, 0, 50); 
+Title.BackgroundTransparency = 1
+
+local NameInput = Instance.new("TextBox", MainFrame)
+NameInput.PlaceholderText = "Brainrot name..."; NameInput.Size = UDim2.new(0, 160, 0, 30)
+NameInput.Position = UDim2.new(0, 10, 0, 60); NameInput.BackgroundColor3 = Color3.fromRGB(30, 30, 30); NameInput.TextColor3 = Color3.new(1,1,1)
+
+local ValueInput = Instance.new("TextBox", MainFrame)
+ValueInput.PlaceholderText = "Min (M)"; ValueInput.Size = UDim2.new(0, 80, 0, 30)
+ValueInput.Position = UDim2.new(0, 180, 0, 60); ValueInput.BackgroundColor3 = Color3.fromRGB(30, 30, 30); ValueInput.TextColor3 = Color3.new(1,1,1)
+
+local SpamInput = Instance.new("TextBox", MainFrame)
+SpamInput.PlaceholderText = "Essais"; SpamInput.Text = "500"; SpamInput.Size = UDim2.new(0, 100, 0, 30)
+SpamInput.Position = UDim2.new(0, 270, 0, 60); SpamInput.BackgroundColor3 = Color3.fromRGB(30, 30, 30); SpamInput.TextColor3 = Color3.new(1,1,1)
+
+local AddBtn = Instance.new("TextButton", MainFrame)
+AddBtn.Text = "ADD NEW BRAINROT"; AddBtn.Size = UDim2.new(0, 360, 0, 30)
+AddBtn.Position = UDim2.new(0, 10, 0, 100); AddBtn.BackgroundColor3 = Color3.fromRGB(0, 120, 255); AddBtn.TextColor3 = Color3.new(1,1,1)
+
+local ListFrame = Instance.new("ScrollingFrame", MainFrame)
+ListFrame.Size = UDim2.new(1, -20, 0, 200); ListFrame.Position = UDim2.new(0, 10, 0, 140)
+ListFrame.BackgroundColor3 = Color3.fromRGB(18, 18, 18); ListFrame.BorderSizePixel = 0
+ListFrame.ScrollBarThickness = 6; ListFrame.ScrollBarImageColor3 = Color3.fromRGB(0, 120, 255)
+ListFrame.CanvasSize = UDim2.new(0, 0, 0, 0)
+
+local UIList = Instance.new("UIListLayout", ListFrame)
+UIList.Padding = UDim.new(0, 5)
+UIList.SortOrder = Enum.SortOrder.LayoutOrder
+
+UIList:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+    ListFrame.CanvasSize = UDim2.new(0, 0, 0, UIList.AbsoluteContentSize.Y + 10)
+end)
+
+local StopBtn = Instance.new("TextButton", MainFrame)
+StopBtn.Size = UDim2.new(1, -20, 0, 35); StopBtn.Position = UDim2.new(0, 10, 0, 350)
+StopBtn.BackgroundColor3 = Color3.fromRGB(200, 0, 0); StopBtn.Text = "CANCEL ATTEMPT"; StopBtn.Font = Enum.Font.GothamBold
+StopBtn.TextColor3 = Color3.new(1,1,1); StopBtn.Visible = false
+
+
+-- --- LOGIQUE D'INTERFACE ---
+
+local function refreshUI()
+    for _, child in pairs(ListFrame:GetChildren()) do if child:IsA("Frame") then child:Destroy() end end
+    for i, item in ipairs(TargetList) do
+        local f = Instance.new("Frame", ListFrame)
+        f.Size = UDim2.new(1, -5, 0, 40); f.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+        f.BorderSizePixel = 0
+        local corner = Instance.new("UICorner", f); corner.CornerRadius = UDim.new(0, 6)
+
+        local t = Instance.new("TextLabel", f)
+        t.Size = UDim2.new(0.6, 0, 1, 0); t.Position = UDim2.new(0, 10, 0, 0)
+        t.Text = i .. ". " .. item.Name:upper() .. " (>" .. item.Min / 1000000 .. "M)"
+        t.TextColor3 = Color3.new(1,1,1); t.BackgroundTransparency = 1
+        t.TextXAlignment = Enum.TextXAlignment.Left; t.Font = Enum.Font.GothamBold; t.TextSize = 14
+
+        local up = Instance.new("TextButton", f); up.Size = UDim2.new(0, 25, 0, 25); up.Position = UDim2.new(0.65, 0, 0.2, 0)
+        up.Text = "↑"; up.BackgroundColor3 = Color3.fromRGB(60, 60, 60); up.TextColor3 = Color3.new(1,1,1)
+        Instance.new("UICorner", up).CornerRadius = UDim.new(0, 4)
+        up.MouseButton1Click:Connect(function() if i > 1 then TargetList[i], TargetList[i-1] = TargetList[i-1], TargetList[i] SaveData() refreshUI() end end)
+
+        local down = Instance.new("TextButton", f); down.Size = UDim2.new(0, 25, 0, 25); down.Position = UDim2.new(0.73, 0, 0.2, 0)
+        down.Text = "↓"; down.BackgroundColor3 = Color3.fromRGB(60, 60, 60); down.TextColor3 = Color3.new(1,1,1)
+        Instance.new("UICorner", down).CornerRadius = UDim.new(0, 4)
+        down.MouseButton1Click:Connect(function() if i < #TargetList then TargetList[i], TargetList[i+1] = TargetList[i+1], TargetList[i] SaveData() refreshUI() end end)
+
+        local d = Instance.new("TextButton", f); d.Size = UDim2.new(0, 30, 0, 30); d.Position = UDim2.new(0.88, 0, 0.15, 0)
+        d.Text = "X"; d.BackgroundColor3 = Color3.fromRGB(180, 0, 0); d.TextColor3 = Color3.new(1,1,1); d.Font = Enum.Font.GothamBold
+        Instance.new("UICorner", d).CornerRadius = UDim.new(0, 6)
+        d.MouseButton1Click:Connect(function() table.remove(TargetList, i) SaveData() refreshUI() end)
+    end
+end
+refreshUI()
+
+
+SettingsBtn.MouseButton1Click:Connect(function()
+    MainFrame.Visible = not MainFrame.Visible
+end)
+
+
+
+
+
+
+
+
+
+
+
+
+
+AddBtn.MouseButton1Click:Connect(function()
+    local val = tonumber(ValueInput.Text)
+    if NameInput.Text ~= "" and val then
+        table.insert(TargetList, {Name = string.lower(NameInput.Text), Min = val * 1000000})
+        NameInput.Text = ""; ValueInput.Text = ""; SaveData() refreshUI()
+    end
+end)
+
+StopBtn.MouseButton1Click:Connect(function()
+    isJoining = false 
+    StopBtn.Visible = false
+    Status.Text = "CANCELLED - SEARCHING..."
+end)
+
+-- --- LOGIQUE JOIN ---
+
+local function spamJoin(jobId, attempts, brainrotName)
+    isJoining = true
+    StopBtn.Visible = true
+    alertSound:Play() 
+    
+    -- NETTOYAGE ULTRA-PRÉCIS (Vire tout ce qui n'est pas alphanumérique, tiret ou underscore)
+    local cleanId = jobId:gsub("%s+", ""):gsub("[^%w%-_]", "")
+    print("DEBUG: Original ID: [" .. tostring(jobId) .. "]")
+    print("DEBUG: Tente de rejoindre l'ID nettoyé : [" .. cleanId .. "]")
+
+    for i = 1, attempts do
+        if not isActive or not isJoining then break end
+        Status.Text = "ATTEMPTING (" .. i .. "/" .. attempts .. "): " .. brainrotName:upper()
+        
+        -- Utilisation d'un pcall pour éviter que le script crash si Roblox refuse l'ID
+        pcall(function()
+            TeleportService:TeleportToPlaceInstance(game.PlaceId, cleanId, LocalPlayer)
+        end)
+        
+        task.wait(0.01)
+    end
+    
+    isJoining = false
+    StopBtn.Visible = false
+    Status.Text = isActive and "WATCHING API..." or "OFF"
+end
+
+local function scanAPI()
+    if isJoining then return end
+    local success, response = pcall(function() return game:HttpGet(API_URL) end)
+    if not success or not response or response == "" then 
+        print("DEBUG: API request failed - success:", success, "response:", tostring(response))
+        return 
+    end
+    
+    local data
+    pcall(function() data = HttpService:JSONDecode(response) end)
+    if not data then 
+        print("DEBUG: JSON decode failed")
+        return 
+    end
+    
+    print("DEBUG: API returned " .. #data .. " servers")
+    local currentTime = os.time()
+    for _, server in pairs(data) do
+        local sID = tostring(server.jobId or ""):gsub("%s+", ""):gsub("[^%w%-_]", "")
+        local sTS_num = tonumber(server.timestamp) or 0
+        local sName = tostring(server.displayName or ""):lower()
+        local sValue = tonumber(server.generation) or 0
+
+        print("DEBUG: Found server - Name:" .. sName .. " | Generation:" .. sValue .. " | ID:" .. sID .. " | Age:" .. (currentTime - sTS_num) .. "s")
+
+        -- Si le serveur est trop vieux, on passe
+        if (currentTime - sTS_num) > MAX_AGE_SECONDS then 
+            print("DEBUG: Server too old, skipping")
+            continue 
+        end
+
+        if sID ~= "" and sID ~= game.JobId then
+            if LastSeenTimestamp[sID] ~= tostring(sTS_num) then
+                local shouldJoin = false
+                
+                -- Si la liste est vide, on rejoint tout ce qui passe
+                if #TargetList == 0 then
+                    shouldJoin = true
+                    print("DEBUG: TargetList empty, joining any server")
+                else
+                    for _, fav in ipairs(TargetList) do
+                        if sName:find(fav.Name, 1, true) and sValue >= fav.Min then
+                            shouldJoin = true
+                            print("DEBUG: Matched target: " .. fav.Name .. " with generation " .. sValue)
+                            break
+                        end
+                    end
+                end
+
+                if shouldJoin then
+                    print("DEBUG: Cible trouvée ! Nom: " .. sName .. " | ID: " .. sID)
+                    LastSeenTimestamp[sID] = tostring(sTS_num)
+                    local count = tonumber(SpamInput.Text) or 500
+                    task.spawn(function() spamJoin(sID, count, server.displayName) end)
+                    break 
+                end
+            end
+        end
+    end
+end
+
+ToggleBtn.MouseButton1Click:Connect(function()
+    isActive = not isActive
+    ToggleBtn.Text = isActive and "ON" or "OFF"
+    ToggleBtn.BackgroundColor3 = isActive and Color3.fromRGB(0, 150, 0) or Color3.fromRGB(150, 0, 0)
+    Status.Text = isActive and "WATCHING API..." or "OFF"
+    if isActive then 
+        LastSeenTimestamp = {}
+        print("\n" .. string.rep("=", 50))
+        print("DEBUG: Scanner ACTIVATED - NEW SESSION")
+        print("DEBUG: Scanning API to mark existing servers as seen...")
+        
+        -- Pre-scan to mark all current servers as already seen
+        local success, response = pcall(function() return game:HttpGet(API_URL) end)
+        if success and response and response ~= "" then
+            local data
+            pcall(function() data = HttpService:JSONDecode(response) end)
+            if data then
+                for _, server in pairs(data) do
+                    local sID = tostring(server.jobId or ""):gsub("%s+", ""):gsub("[^%w%-_]", "")
+                    local sTS_num = tonumber(server.timestamp) or 0
+                    if sID ~= "" then
+                        LastSeenTimestamp[sID] = tostring(sTS_num)
+                    end
+                end
+                print("DEBUG: Marked " .. #data .. " existing servers as seen")
+            end
+        end
+        
+        print("DEBUG: Only NEW servers from now on will be processed")
+        print(string.rep("=", 50) .. "\n")
+    end
+end)
+
+task.spawn(function()
+    while true do
+        if isActive then pcall(scanAPI) end
+        task.wait(REFRESH_RATE)
+    end
+end)
