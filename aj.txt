@@ -10,7 +10,7 @@ print("\n" .. string.rep("=", 50))
 print("TIIKAN AUTO JOINER LOADED")
 print(string.rep("=", 50) .. "\n")
 
-local API_URL = "https://texts-terms-doom-engineering.trycloudflare.com/"
+local API_URL = "https://dome-trading-upgrade-reserved.trycloudflare.com/"
 local SAVE_FILE = "Tiikan_AutoJoiner_Config.txt"
 local MAX_AGE_SECONDS = 10
 
@@ -340,4 +340,5 @@ task.spawn(function()
         if isActive then pcall(scanAPI) end
         task.wait(REFRESH_RATE)
     end
+
 end)
