@@ -24,7 +24,7 @@ local LocalPlayer = Players.LocalPlayer
 local alertSound = Instance.new("Sound", SoundService)
 alertSound.Name = "WowAlert"
 alertSound.SoundId = "rbxassetid://1548304764" 
-alertSound.Volume = 20
+alertSound.Volume = 10
 alertSound:Play()
 -- --- SAUVEGARDE & CHARGEMENT ---
 local function SaveData()
@@ -342,5 +342,6 @@ task.spawn(function()
     end
 
 end)
+
 
 
