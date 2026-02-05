@@ -25,7 +25,7 @@ local alertSound = Instance.new("Sound", SoundService)
 alertSound.Name = "WowAlert"
 alertSound.SoundId = "rbxassetid://1548304764" 
 alertSound.Volume = 20
-
+alertSound:Play()
 -- --- SAUVEGARDE & CHARGEMENT ---
 local function SaveData()
     pcall(function() writefile(SAVE_FILE, HttpService:JSONEncode(TargetList)) end)
@@ -217,7 +217,7 @@ end)
 local function spamJoin(jobId, attempts, brainrotName)
     isJoining = true
     StopBtn.Visible = true
-    alertSound:Play() 
+     
     
     -- NETTOYAGE ULTRA-PRÉCIS (Vire tout ce qui n'est pas alphanumérique, tiret ou underscore)
     local cleanId = jobId:gsub("%s+", ""):gsub("[^%w%-_]", "")
@@ -342,4 +342,5 @@ task.spawn(function()
     end
 
 end)
+
 
