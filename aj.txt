@@ -152,10 +152,6 @@ UIList:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
     ListFrame.CanvasSize = UDim2.new(0, 0, 0, UIList.AbsoluteContentSize.Y + 10)
 end)
 
-local StopBtn = Instance.new("TextButton", MainFrame)
-StopBtn.Size = UDim2.new(1, -20, 0, 35); StopBtn.Position = UDim2.new(0, 10, 0, 350)
-StopBtn.BackgroundColor3 = Color3.fromRGB(200, 0, 0); StopBtn.Text = "CANCEL ATTEMPT"; StopBtn.Font = Enum.Font.GothamBold
-StopBtn.TextColor3 = Color3.new(1,1,1); StopBtn.Visible = false
 
 
 -- --- LOGIQUE D'INTERFACE ---
@@ -357,6 +353,5 @@ task.spawn(function()
     end
 
 end)
-
 
 
