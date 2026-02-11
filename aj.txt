@@ -10,7 +10,7 @@ print("\n" .. string.rep("=", 50))
 print("TIIKAN AUTO JOINER LOADED")
 print(string.rep("=", 50) .. "\n")
 
-local API_URL = "https://consumer-atom-solo-pockets.trycloudflare.com/"
+local API_URL = "https://sab.ziamolla.uk/"
 local SAVE_FILE = "Tiikan_AutoJoiner_Config.txt"
 local MAX_AGE_SECONDS = 10
 
@@ -353,5 +353,6 @@ task.spawn(function()
     end
 
 end)
+
 
 
