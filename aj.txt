@@ -1,4 +1,4 @@
-local HttpService = game:GetService("HttpService")
+--local HttpService = game:GetService("HttpService")
 local TeleportService = game:GetService("TeleportService")
 local Players = game:GetService("Players")
 local CoreGui = game:GetService("CoreGui")
@@ -353,6 +353,7 @@ task.spawn(function()
     end
 
 end)
+
 
 
 
